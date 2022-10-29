@@ -57,6 +57,12 @@
     align-items: center;
 }
 
+.data__form__container{
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+}
+
 .data__form {
     display: flex;
     flex-direction: column;

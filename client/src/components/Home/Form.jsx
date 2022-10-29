@@ -1,10 +1,9 @@
 import axios from 'axios'
 import React, { useState } from 'react'
-import { intervaloConfianzaPoblacionConocidaVarianzaConocida, intervaloConfianzaPoblacionDesconocida, intervaloDiferenciaMediaVarianzaConocidaMuestraGrande, intervaloDiferenciaMediaVarianzaDesconocidaDiferentesMuestraPequeña, intervaloDiferenciaMediaVarianzaDesconocidaIgualesMuestraPequeña, intervaloDiferenciaProporcionMuestraGrande, intervaloMediaPoblacionDesconocidaMuestraGrande, intervaloMediaPoblacionNormalVarianzaDesconocidaMuestraPeque, intervaloProporcionMuestraGrande, intervaloRazonVarianzas } from '../../utils/APIRoutes'
+import { intervaloConfianzaPoblacionConocidaVarianzaConocida, intervaloConfianzaPoblacionDesconocida, intervaloDiferenciaMediaVarianzaConocidaMuestraGrande, intervaloDiferenciaMediaVarianzaDesconocidaDiferentesMuestraPequeña, intervaloDiferenciaMediaVarianzaDesconocidaIgualesMuestraPequeña, intervaloDiferenciaProporcionMuestraGrande, intervaloMediaPoblacionDesconocidaMuestraGrande, intervaloMediaPoblacionNormalVarianzaDesconocidaMuestraPeque, intervaloProporcionMuestraGrande, intervaloRazonVarianzas, intervaloVarianzaPoblacionNormal } from '../../utils/APIRoutes'
 
 export default function Form(props) {
     const option = props.formOption
-    console.log(option)
     // CONSTANTE DONDE SE GUARDA EL CÁLCULO EN PANTALLA
     const [calc, setCalc] = useState(null)
     // CONSTANTE DONDE SE GUARDAN LOS DATOS PARA EL CÁLCULO
@@ -12,17 +11,25 @@ export default function Form(props) {
         X: null,
         S: null,
         n: null,
-        alfa: 0.05,
+        porcentaje: 95,
+        alfa: null,
         P: null,
         P1: null,
         P2: null,
         n1: null,
         n2: null,
-        Y: null
+        Y: null,
     })
     const handleChange = ({ target: { name, value } }) => {
-        console.log(typeof(value))
-        setData({ ...data, [name]: parseFloat(value) })
+        setCalc(null)
+        switch (name) {
+            case 'porcentaje':
+                setData({ ...data, 'alfa': (1 - (parseFloat(value) / 100)) })
+                break;
+            default:
+                setData({ ...data, [name]: parseFloat(value) })
+                break;
+        }
     }
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -103,6 +110,7 @@ export default function Form(props) {
                             step='any'
                             name='S'
                             placeholder='Desviación (S)'
+                            min={0}
                             onChange={handleChange}
                         />
                         <input
@@ -115,16 +123,20 @@ export default function Form(props) {
                         <input
                             type='number'
                             step='any'
-                            name='alfa'
+                            min={90}
+                            max={99}
+                            name='porcentaje'
+                            placeholder='Porcentaje de Confianza'
                             onChange={handleChange}
                         />
                         <label>
-                            {`${data.alfa}% (alpha)`}
+                            {`${data.alfa} (alpha)`}
                         </label>
                         <button>Calcular</button>
                     </form>
                     <div className='result__container'>
-                        {calc !== null ? <p>estamos {(1-data.alfa) * 100}% seguros de que el valor medio está entre {calc.Inferior} y {calc.Superior}</p> : null}
+                        {calc !== null ? <p>estamos {(1 - data.alfa) * 100}%
+                            seguros de que el valor medio está entre {calc.Inferior} y {calc.Superior}</p> : null}
                     </div>
                 </div>
             )
@@ -136,6 +148,8 @@ export default function Form(props) {
                             type='number'
                             step='any'
                             name='P'
+                            min={0}
+                            max={1}
                             placeholder='Proporción (rho (p))'
                             onChange={handleChange}
                         />
@@ -149,14 +163,21 @@ export default function Form(props) {
                         <input
                             type='number'
                             step='any'
-                            name='alfa'
+                            name='porcentaje'
+                            placeholder='Porcentaje de Confianza'
+                            min={90}
+                            max={99}
                             onChange={handleChange}
                         />
                         <label>
-                            {`${data.alfa}% (alpha)`}
+                            {`${data.alfa} (alpha)`}
                         </label>
                         <button>Calcular</button>
                     </form>
+                    <div className='result__container'>
+                        {calc !== null ? <p>estamos {(1 - data.alfa) * 100}%
+                        seguros de que la proporción poblacional está entre {calc.Inferior} y {calc.Superior}</p> : null}
+                    </div>
                 </div>
             )
         case option === 6:
@@ -168,6 +189,8 @@ export default function Form(props) {
                             step='any'
                             name='P1'
                             placeholder='Proporción 1 (rho1 (P1))'
+                            max={1}
+                            min={0}
                             onChange={handleChange}
                         />
                         <input
@@ -175,6 +198,8 @@ export default function Form(props) {
                             step='any'
                             name='P2'
                             placeholder='Proporción 2 (rho2 (P2))'
+                            max={1}
+                            min={0}
                             onChange={handleChange}
                         />
                         <input
@@ -194,32 +219,39 @@ export default function Form(props) {
                         <input
                             type='number'
                             step='any'
-                            name='alfa'
+                            name='porcentaje'
+                            placeholder='Porcentaje de Confianza'
+                            min={90}
+                            max={99}
                             onChange={handleChange}
                         />
                         <label>
-                            {`${data.alfa}% (alpha)`}
+                            {`${data.alfa} (alpha)`}
                         </label>
                         <button>Calcular</button>
                     </form>
+                    <div className='result__container'>
+                        {calc !== null ? <p>estamos {(1 - data.alfa) * 100}%
+                            seguros de que la diferencia de medias está entre {calc.Inferior} y {calc.Superior}</p> : null}
+                    </div>
                 </div>
             )
-        case option === 7 || option === 8 || option === 9 || option === 10 || option === 11:
+        case option === 7 || option === 8 || option === 9 || option === 10:
             return (
                 <div className='data__form__container'>
                     <form onSubmit={handleSubmit} className='data__form'>
                         <input
                             type='number'
                             step='any'
-                            name='P1'
-                            placeholder='Media 1 (X1)'
+                            name='X'
+                            placeholder='Media 1 (X)'
                             onChange={handleChange}
                         />
                         <input
                             type='number'
                             step='any'
-                            name='P2'
-                            placeholder='Media 2 (X2)'
+                            name='Y'
+                            placeholder='Media 2 (Y)'
                             onChange={handleChange}
                         />
                         <input
@@ -241,6 +273,7 @@ export default function Form(props) {
                             step='any'
                             name='s1'
                             placeholder='Varianza 1 (s1)'
+                            min={0}
                             onChange={handleChange}
                         />
                         <input
@@ -248,19 +281,95 @@ export default function Form(props) {
                             step='any'
                             name='s2'
                             placeholder='Varianza 2 (s2)'
+                            min={0}
                             onChange={handleChange}
                         />
                         <input
                             type='number'
                             step='any'
-                            name='alfa'
+                            name='porcentaje'
+                            placeholder='Porcentaje de Confianza'
+                            min={90}
+                            max={99}
                             onChange={handleChange}
                         />
                         <label>
-                            {`${data.alfa}% (alpha)`}
+                            {`${data.alfa} (alpha)`}
                         </label>
                         <button>Calcular</button>
                     </form>
+                    <div className='result__container'>
+                        {calc !== null ? <p>estamos {(1 - data.alfa) * 100}%
+                            seguros de que la varianza está entre {calc.Inferior} y {calc.Superior}</p> : null}
+                    </div>
+                </div>
+            )
+        case option === 11:
+            return (
+                <div className='data__form__container'>
+                    <form onSubmit={handleSubmit} className='data__form'>
+                        <input
+                            type='number'
+                            step='any'
+                            name='X'
+                            placeholder='Media 1 (X)'
+                            onChange={handleChange}
+                        />
+                        <input
+                            type='number'
+                            step='any'
+                            name='Y'
+                            placeholder='Media 2 (Y)'
+                            onChange={handleChange}
+                        />
+                        <input
+                            type='number'
+                            step='any'
+                            name='n1'
+                            placeholder='Muestra 1 (n1)'
+                            onChange={handleChange}
+                        />
+                        <input
+                            type='number'
+                            step='any'
+                            name='n2'
+                            placeholder='Muestra 2 (n2)'
+                            onChange={handleChange}
+                        />
+                        <input
+                            type='number'
+                            step='any'
+                            name='s1'
+                            placeholder='Varianza 1 (s1)'
+                            min={0}
+                            onChange={handleChange}
+                        />
+                        <input
+                            type='number'
+                            step='any'
+                            name='s2'
+                            placeholder='Varianza 2 (s2)'
+                            min={0}
+                            onChange={handleChange}
+                        />
+                        <input
+                            type='number'
+                            step='any'
+                            name='porcentaje'
+                            placeholder='Porcentaje de Confianza'
+                            min={90}
+                            max={99}
+                            onChange={handleChange}
+                        />
+                        <label>
+                            {`${data.alfa} (alpha)`}
+                        </label>
+                        <button>Calcular</button>
+                    </form>
+                    <div className='result__container'>
+                        {calc !== null ? <p>estamos {(1 - data.alfa) * 100}%
+                            seguros de que el intervalo para esta razón de varianzas está entre {calc.Inferior} y {calc.Superior}</p> : null}
+                    </div>
                 </div>
             )
         default:
